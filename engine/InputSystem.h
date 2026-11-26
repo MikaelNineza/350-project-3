@@ -4,15 +4,14 @@
 
 namespace ECSEngine {
 
-const float kMaxRunVelocity = 15;
-const float kDashVelocity = 50;
-const float kJumpVelocity = 25;
-const float kGroundRunAcceleration = 5;
-const float kAirRunAcceleration = 4;
+const float kMaxRunVelocity = 900;
+const float kDashVelocity = 1500;
+const float kJumpVelocity = 500;
+const float kGroundRunAcceleration = 60;
+const float kAirRunAcceleration = 30;
 const float kDashInterval = 25;
 const float kWallJumpVelocityY = 600;
 const float kWallJumpVelocityX = 300;
-const float kJumpReleaseAcceleration = 50;
 const float kDownHeldFallAcceleration = 50;
 
 template <typename... Components>
@@ -38,11 +37,10 @@ public:
             auto &mov = em.template GetComponent<MovementComponent>(id);
             auto &col = em.template GetComponent<CollisionComponent>(id);
 
-            bool right = input.keydown[Key::Right];
-            bool left = input.keydown[Key::Left];
-            bool down = input.keydown[Key::Down];
-            bool jumping = input.keydown[Key::Z];
-            bool jump = input.keydown[Key::Z] && !input.lastKeydown[Key::Z];
+            bool right = input.keydown[Key::D];
+            bool left = input.keydown[Key::A];
+            bool down = input.keydown[Key::S];
+            bool jump = input.keydown[Key::W] && !input.lastKeydown[Key::W];
             bool dash = input.keydown[Key::C] && !input.lastKeydown[Key::C];
 
             // adjust speed in left/right direction
@@ -80,11 +78,6 @@ public:
                     mov.velocity.x = col.onLeftWall ? kWallJumpVelocityX : -kWallJumpVelocityX; // go the opposite direction to the wall
                     engine->GetSoundManager().GetSound("push wall").play();
                 }
-            }
-
-            // extra gravity from letting go of jump
-            if (mov.velocity.y < 0.f && !jumping) {
-                mov.velocity.y += kJumpReleaseAcceleration;
             }
 
             // extra gravity of pressing down
