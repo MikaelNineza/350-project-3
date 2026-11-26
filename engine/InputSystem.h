@@ -10,9 +10,8 @@ const float kJumpVelocity = 500;
 const float kGroundRunAcceleration = 60;
 const float kAirRunAcceleration = 30;
 const float kDashInterval = 25;
-const float kWallJumpVelocityY = 600;
-const float kWallJumpVelocityX = 300;
 const float kDownHeldFallAcceleration = 50;
+const int kJumpTime = 15;
 
 template <typename... Components>
 class InputSystem : public System<Components...> {
@@ -33,9 +32,10 @@ public:
                 continue;
             }
 
-            auto &input = em.template GetComponent<InputComponent>(id);
-            auto &mov = em.template GetComponent<MovementComponent>(id);
-            auto &col = em.template GetComponent<CollisionComponent>(id);
+            InputComponent &input = em.template GetComponent<InputComponent>(id);
+            MovementComponent &mov = em.template GetComponent<MovementComponent>(id);
+            CollisionComponent &col = em.template GetComponent<CollisionComponent>(id);
+            GravityComponent &gravity = em.template GetComponent<GravityComponent>(id);
 
             bool right = input.keydown[Key::D];
             bool left = input.keydown[Key::A];
@@ -65,18 +65,29 @@ public:
             }
 
             if (jump) {
-                bool onWall = col.onLeftWall || col.onRightWall;
-                bool falling = mov.velocity.y > 0.f;
-                // normal jump
                 if (col.onGround) {
-                    mov.velocity.y = -kJumpVelocity;
+                    input.jumpTimeLeft = kJumpTime;
+                    input.canDoubleJump = true;
+                    engine->GetSoundManager().GetSound("jump").play();
+                } else if (input.canDoubleJump) {
+                    input.canDoubleJump = false;
+                    input.jumpTimeLeft = kJumpTime;
                     engine->GetSoundManager().GetSound("jump").play();
                 }
-                // jumping while on a wall
-                else if (onWall && falling) {
-                    mov.velocity.y = -kWallJumpVelocityY;
-                    mov.velocity.x = col.onLeftWall ? kWallJumpVelocityX : -kWallJumpVelocityX; // go the opposite direction to the wall
-                    engine->GetSoundManager().GetSound("push wall").play();
+                
+            }
+
+            if (input.jumpTimeLeft > 0) {
+                if (col.onCeiling) {
+                    input.jumpTimeLeft = 0;
+                } else {
+                    mov.velocity.y = -kJumpVelocity;
+                    gravity.disabledTimer = 1;
+                    input.jumpTimeLeft -= 1;
+                }
+
+                if (input.jumpTimeLeft == 0) {
+                    mov.velocity.y = kJumpVelocity * 1.f;
                 }
             }
 
