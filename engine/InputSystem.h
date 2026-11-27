@@ -10,6 +10,8 @@ const float kJumpVelocity = 500;
 const float kGroundRunAcceleration = 60;
 const float kAirRunAcceleration = 30;
 const float kDashInterval = 25;
+const float kWallJumpVelocityY = 400;
+const float kWallJumpVelocityX = 200;
 const float kDownHeldFallAcceleration = 50;
 const int kJumpTime = 15;
 
@@ -65,6 +67,8 @@ public:
             }
 
             if (jump) {
+                bool onWall = col.onLeftWall || col.onRightWall;
+                bool falling = mov.velocity.y > 0.f;
                 if (col.onGround) {
                     input.jumpTimeLeft = kJumpTime;
                     input.canDoubleJump = true;
@@ -73,6 +77,10 @@ public:
                     input.canDoubleJump = false;
                     input.jumpTimeLeft = kJumpTime;
                     engine->GetSoundManager().GetSound("jump").play();
+                } else if (onWall && falling) {
+                    mov.velocity.y = -kWallJumpVelocityY;
+                    mov.velocity.x = col.onLeftWall ? kWallJumpVelocityX : -kWallJumpVelocityX;
+                    engine->GetSoundManager().GetSound("push wall").play();
                 }
                 
             }
