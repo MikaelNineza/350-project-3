@@ -77,9 +77,12 @@ ECSEngine<Components...>::~ECSEngine() {
 template <typename... Components>
 void ECSEngine<Components...>::Run() {
     while (ProcessEvents()) {
+        mWindowManager.GetWindow()->clear(sf::Color::Black);
         if (!mSystemManager.Run(this)) {
             break;
         }
+
+        mWindowManager.GetWindow()->display();
     }
 }
 

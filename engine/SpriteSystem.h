@@ -25,7 +25,6 @@ public:
         auto &em = engine->GetEntityManager();
         auto &sm = engine->GetSpriteManager();
         auto window = engine->GetWindowManager().GetWindow();
-        window->clear(sf::Color::Black);
 
         for (const auto &entity : em) {
             EntityID id = entity.GetID();
@@ -57,7 +56,6 @@ public:
             window->draw(sprite);
         }
 
-        window->display();
         return kContinue;
     }
 };

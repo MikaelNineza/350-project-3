@@ -16,7 +16,6 @@
 #include "MovementSystem.h"
 #include "RespawnComponent.h"
 #include "ScoreComponent.h"
-#include "ScoreComponent.h"
 #include "ScoreSystem.h"
 #include "SpawnComponent.h"
 #include "SpawnSystem.h"
@@ -149,6 +148,7 @@ int main(int argc, char* argv[]) {
     auto &sManager = engine.GetSpriteManager();
     // Load sounds
     auto &soundManager = engine.GetSoundManager();
+    sf::Listener::setGlobalVolume(0.f);
     soundManager.RegisterSound(gResourcePath + "sfx_jump.ogg", "jump");
     soundManager.RegisterSound(gResourcePath + "footstep_grass_003.ogg", "push wall");
     soundManager.RegisterSound(gResourcePath + "sfx_gem.ogg", "collect star");
@@ -190,27 +190,7 @@ int main(int argc, char* argv[]) {
 
     // Setup score component
     ECSEngine::EntityID scoreID = em.CreateEntity("score");
-    ECSEngine::ScoreComponent scoreComp{};
-    scoreComp.score = 0;
-    for (int i = 0; i < 10; ++i) {
-        temp.topLeft = {832, 832 - i * 64};
-        scoreComp.digitTextureID[i] = sManager.RegisterTexture(gResourcePath + "spritesheet-tiles-default.png", temp);
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        ECSEngine::EntityID digitID = em.CreateEntity("digit");
-        ECSEngine::Point2D temp2(i * 64 + 10, 10);
-        em.AddComponent(digitID, ECSEngine::LocationComponent{temp2});
-
-        ECSEngine::SpriteComponent dSprite;
-        dSprite.textureID = scoreComp.digitTextureID[0];
-        dSprite.bounds = ECSEngine::Rect{ECSEngine::Point2D(0.f, 0.f), 64, 64};
-        dSprite.worldSpace = false;
-        em.AddComponent(digitID, dSprite);
-
-        scoreComp.digitID[i] = digitID;
-    }
-
+    ECSEngine::ScoreComponent scoreComp{5};
     em.AddComponent(scoreID, scoreComp);
 
     // Setup Camera
@@ -236,9 +216,9 @@ int main(int argc, char* argv[]) {
     sm.AddSystem(std::make_unique<ECSEngine::GravitySystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::MovementSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::CollisionSystem<COMPONENTS>>());
-    sm.AddSystem(std::make_unique<ECSEngine::ScoreSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::CameraSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::SpriteSystem<COMPONENTS>>());
+    sm.AddSystem(std::make_unique<ECSEngine::ScoreSystem<COMPONENTS>>());
     sm.AddSystem(std::make_unique<ECSEngine::SpawnSystem<COMPONENTS>>());
 
     engine.Run();

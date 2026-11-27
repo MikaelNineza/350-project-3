@@ -93,20 +93,6 @@ private:
                     else {
                         mRemove.push_back(a);
                     }
-
-                    auto &sc = em.template GetComponent<ScoreComponent>(mScoreEntity);
-                    sc.score++;
-                    engine->GetSoundManager().GetSound("collect star").play();
-                }
-
-                // star touched star
-                else {
-                    auto &movA = em.template GetComponent<MovementComponent>(a);
-                    auto &movB = em.template GetComponent<MovementComponent>(b);
-                    // stars move away from each other horizontally when colliding
-                    float dir = (aBox.CenterX() < bBox.CenterX()) ? -1.f : 1.f;
-                    movA.velocity.x = dir * std::abs(movA.velocity.x);
-                    movB.velocity.x = -dir * std::abs(movB.velocity.x);
                 }
             }
         }
