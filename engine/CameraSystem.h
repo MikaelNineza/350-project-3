@@ -20,6 +20,8 @@ public:
         return name;
     }
 
+
+
     tSystemReturn Run(EngineView<Components...>* engine) override {
         auto &em = engine->GetEntityManager();
         auto &wm = engine->GetWindowManager();
@@ -28,50 +30,45 @@ public:
             if (!em.ValidEntity(id)) {
 					continue;
 			}
-            if (!em.template HasComponent<CameraComponent>(id)) {
-                continue;
-            }
-            if (!em.template HasComponent<CameraFollower>(id)) {
-                continue;
-            }
-
-            EntityID follower = em.template GetComponent<CameraFollower>(id).entityID;
-            if (!em.ValidEntity(follower)) {
-					continue;
-			}
-            if (!em.template HasComponent<LocationComponent>(follower)) {
-                continue;
-            }
-            if (!em.template HasComponent<SpriteComponent>(follower)) {
+            if (!em.template HasComponent<CameraComponent>(id) || !em.template HasComponent<CameraFollowers>(id)) {
                 continue;
             }
 
             CameraComponent &camera = em.template GetComponent<CameraComponent>(id);
-            Point2D location = em.template GetComponent<LocationComponent>(follower).loc;
-            Rect spriteBounds = em.template GetComponent<SpriteComponent>(follower).bounds;
 
-            Point2D temp(spriteBounds.width / 2, spriteBounds.height / 2);
-            Point2D playerCenterWorld = location + spriteBounds.topLeft + temp;
-            wm.SetWorldScale(camera.worldUnitsPerPixel);
-            wm.SetWorldCenter(camera.position);
-            Point2D playerCenterWindow = wm.WorldToWindow(playerCenterWorld);
+            // Camera positioning obtained at: https://www.reddit.com/r/gamemaker/comments/3s97gd/help_how_do_you_create_a_camera_system_like_super/
+            std::vector<EntityID> &followers = em.template GetComponent<CameraFollowers>(id).entityIDs;
+            Point2D sum(0.f, 0.f);
 
-            Rect softLimit = camera.softExclusion;
-            Rect hardLimit = camera.hardExclusion;
-            float playerX = 0;
+            std::vector<Point2D> playerCenters;
+            for (EntityID followerID : followers) {
+                if (!em.ValidEntity(followerID)) {
+                    continue;
+                }
 
-            // Obtain change in x
-            if (playerCenterWindow.x < hardLimit.topLeft.x) {
-                playerX = playerCenterWindow.x - hardLimit.topLeft.x;
-            } else if (playerCenterWindow.x > (hardLimit.topLeft.x + hardLimit.width)) {
-                playerX = playerCenterWindow.x - (hardLimit.topLeft.x + hardLimit.width);
-            } else if (playerCenterWindow.x < softLimit.topLeft.x) {
-                playerX = camera.speed * (playerCenterWindow.x - softLimit.topLeft.x);
-            } else if (playerCenterWindow.x > (softLimit.topLeft.x + softLimit.width)) {
-                playerX = camera.speed * (playerCenterWindow.x - (softLimit.topLeft.x + softLimit.width));
+                if (!em.template HasComponent<LocationComponent>(followerID)) {
+                    continue;
+                }
+
+                if (!em.template HasComponent<SpriteComponent>(followerID)) {
+                    continue;
+                }
+
+                Point2D plocation = em.template GetComponent<LocationComponent>(followerID).loc;
+                Rect pBounds = em.template GetComponent<SpriteComponent>(followerID).bounds;
+                Point2D temp(pBounds.width / 2, pBounds.height / 2);
+                Point2D playerCenterWorld = plocation + pBounds.topLeft + temp;
+                playerCenters.push_back(playerCenterWorld);
+                sum = sum + playerCenterWorld;
             }
 
-            camera.position = camera.position + Point2D(playerX, 0.0f) * camera.worldUnitsPerPixel;
+            if (playerCenters.empty()) {
+                continue;
+            }
+
+            Point2D center = sum / playerCenters.size();
+
+            camera.position = camera.position + (center - camera.position) * camera.speed;
             auto viewCenter = camera.position;
 
             if (em.template HasComponent<CameraShake>(id)) {

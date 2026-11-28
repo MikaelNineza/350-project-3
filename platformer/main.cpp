@@ -27,7 +27,7 @@ std::string gResourcePath = "../assets/";
 #define COMPONENTS                                                                             \
     ECSEngine::LocationComponent, ECSEngine::MovementComponent, ECSEngine::CollisionComponent, \
         ECSEngine::SpriteComponent, ECSEngine::SpawnComponent, ECSEngine::CameraComponent,     \
-        ECSEngine::CameraFollower, ECSEngine::InputComponent, ECSEngine::GravityComponent,     \
+        ECSEngine::CameraFollowers, ECSEngine::InputComponent, ECSEngine::GravityComponent,     \
         ECSEngine::CameraShake, ECSEngine::ScoreComponent, ECSEngine::RespawnComponent
 using Engine = ECSEngine::ECSEngine<COMPONENTS>;
 
@@ -37,7 +37,8 @@ struct LineInfo {
     ECSEngine::SpriteID spriteID;
 };
 
-ECSEngine::Point2D playerSpawn;
+ECSEngine::Point2D player1Spawn;
+ECSEngine::Point2D player2Spawn;
 ECSEngine::SpriteID starSprite;
 
 void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
@@ -92,7 +93,12 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
             ECSEngine::Point2D pos(x * tile.x + topLeft.x, y * tile.y + topLeft.y);
             
             if (chr == 'o') {
-                playerSpawn = pos;
+                player1Spawn = pos;
+                continue;
+            }
+
+            if (chr == 'a') {
+                player2Spawn = pos;
                 continue;
             }
             
@@ -104,18 +110,6 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
             spriteComp.bounds = ECSEngine::Rect{ECSEngine::Point2D(0, 0), tile.x, tile.y};
             spriteComp.worldSpace = true;
             em.AddComponent(entity, spriteComp);
-
-            if (chr == 'S') {
-                ECSEngine::SpawnComponent spawnComponent;
-                spawnComponent.entityID = entity;
-                spawnComponent.spawnType = "star";
-                spawnComponent.spawnTextureID = starSprite;
-                spawnComponent.timeToNextSpawn = 120;
-                spawnComponent.timeBetweenSpawns = 120;
-                spawnComponent.totalSpawns = 5;
-                em.AddComponent(entity, spawnComponent);
-                continue;
-            }
 
             if (type == 2) {
                 ECSEngine::CollisionComponent collision{};
@@ -163,30 +157,51 @@ int main(int argc, char* argv[]) {
     LoadMap(engine, gResourcePath, "sky.map");
     LoadMap(engine, gResourcePath, "world.map");
 
-    // Place player
-    ECSEngine::EntityID playerID = em.CreateEntity("player");
+    // Place player1
+    ECSEngine::EntityID playerID = em.CreateEntity("player1");
     ECSEngine::SpriteComponent spriteComp;
     ECSEngine::SpriteID pSprite = sManager.RegisterTexture(gResourcePath + "spritesheet-characters-default.png", ECSEngine::Rect{ECSEngine::Point2D(640, 128), 128, 128});
     spriteComp.textureID = pSprite;
     spriteComp.bounds = ECSEngine::Rect{ECSEngine::Point2D(0, 0), 128, 128};
     spriteComp.worldSpace = true;
-    playerSpawn.y = playerSpawn.y - 64.f;
+    player1Spawn.y = player1Spawn.y - 64.f;
     em.AddComponent(playerID, spriteComp);
     em.AddComponent(playerID, ECSEngine::GravityComponent(ECSEngine::Point2D(0.f, 1000.f)));
     em.AddComponent(playerID, ECSEngine::InputComponent(playerID));
-    em.AddComponent(playerID, ECSEngine::LocationComponent{playerSpawn});
+    em.AddComponent(playerID, ECSEngine::LocationComponent{player1Spawn});
     em.AddComponent(playerID, ECSEngine::MovementComponent{ECSEngine::Point2D(0.f, 0.f)});
-    em.AddComponent(playerID, ECSEngine::RespawnComponent{playerSpawn});
+    em.AddComponent(playerID, ECSEngine::RespawnComponent{player1Spawn});
 
     ECSEngine::CollisionComponent collision{};
     collision.staticEntity = 0;
-
-    // The values for this box were chosen from Prompt #2 (see readme)
     collision.collisionBox = ECSEngine::Rect{ECSEngine::Point2D(40.f, 36.f), 48, 92};
 
     collision.previousCollisionBox = collision.collisionBox;
-    collision.previousCollisionBox.topLeft = collision.collisionBox.topLeft + playerSpawn;
+    collision.previousCollisionBox.topLeft = collision.collisionBox.topLeft + player1Spawn;
     em.AddComponent(playerID, collision);
+
+    // Place player2
+    ECSEngine::EntityID playerID2 = em.CreateEntity("player2");
+    ECSEngine::SpriteComponent spriteComp2;
+    ECSEngine::SpriteID pSprite2 = sManager.RegisterTexture(gResourcePath + "spritesheet-characters-default.png", ECSEngine::Rect{ECSEngine::Point2D(640, 128), 128, 128});
+    spriteComp2.textureID = pSprite2;
+    spriteComp2.bounds = ECSEngine::Rect{ECSEngine::Point2D(0, 0), 128, 128};
+    spriteComp2.worldSpace = true;
+    player2Spawn.y = player2Spawn.y - 64.f;
+    em.AddComponent(playerID2, spriteComp2);
+    em.AddComponent(playerID2, ECSEngine::GravityComponent(ECSEngine::Point2D(0.f, 1000.f)));
+    em.AddComponent(playerID2, ECSEngine::InputComponent(playerID2));
+    em.AddComponent(playerID2, ECSEngine::LocationComponent{player2Spawn});
+    em.AddComponent(playerID2, ECSEngine::MovementComponent{ECSEngine::Point2D(0.f, 0.f)});
+    em.AddComponent(playerID2, ECSEngine::RespawnComponent{player2Spawn});
+
+    ECSEngine::CollisionComponent collision2{};
+    collision2.staticEntity = 0;
+    collision2.collisionBox = ECSEngine::Rect{ECSEngine::Point2D(40.f, 36.f), 48, 92};
+
+    collision2.previousCollisionBox = collision2.collisionBox;
+    collision2.previousCollisionBox.topLeft = collision2.collisionBox.topLeft + player2Spawn;
+    em.AddComponent(playerID2, collision2);
 
     // Setup score component
     ECSEngine::EntityID scoreID = em.CreateEntity("score");
@@ -194,19 +209,14 @@ int main(int argc, char* argv[]) {
     em.AddComponent(scoreID, scoreComp);
 
     // Setup Camera
-    float width = engine.GetWindowManager().GetWindowSize().x;
-    float height = engine.GetWindowManager().GetWindowSize().y;
-
     ECSEngine::EntityID cameraID = em.CreateEntity("camera");
     ECSEngine::CameraComponent camera{};
-    camera.position = playerSpawn;
+    camera.position = player1Spawn;
     camera.position.y = 450;
     camera.worldUnitsPerPixel = 1;
-    camera.hardExclusion = ECSEngine::Rect{ECSEngine::Point2D(width * 0.1f), width * 0.8f, height};
-    camera.softExclusion = ECSEngine::Rect{ECSEngine::Point2D(width * 0.3f), width * 0.4f, height};
     camera.speed = 0.1f;
     em.AddComponent(cameraID, camera);
-    em.AddComponent(cameraID, ECSEngine::CameraFollower{playerID});
+    em.AddComponent(cameraID, ECSEngine::CameraFollowers{{playerID, playerID2}});
     em.AddComponent(cameraID, ECSEngine::CameraShake{0, ECSEngine::Point2D(0, 0)});
 
     // Add all systems
