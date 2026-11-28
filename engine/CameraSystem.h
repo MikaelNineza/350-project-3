@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <unordered_map>
 
 #include "CameraComponent.h"
@@ -67,6 +68,20 @@ public:
             }
 
             Point2D center = sum / playerCenters.size();
+            float maxDistance = 0.f;
+            for (size_t i = 0; i < playerCenters.size(); ++i) {
+                for (size_t j = i + 1; j < playerCenters.size(); ++j) {
+                    Point2D diff = playerCenters[i] - playerCenters[j];
+                    maxDistance = std::max(maxDistance, std::sqrt(diff.x * diff.x + diff.y * diff.y));
+                }
+            }
+
+            const float minZoom = 1.f;
+            const float maxZoom = 2.f;
+            const float constVal = 200;
+            float width =  wm.GetWindowSize().x;
+            float targetZoom = std::clamp((maxDistance + constVal) / width, minZoom, maxZoom);
+            camera.worldUnitsPerPixel = targetZoom;
 
             camera.position = camera.position + (center - camera.position) * camera.speed;
             auto viewCenter = camera.position;
