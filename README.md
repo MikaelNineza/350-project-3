@@ -1,6 +1,7 @@
 # CMPUT 350 HW 3
 
 Background spritesheet obtained at: https://anokolisa.itch.io/action
+Playable characters obtained at: https://craftpix.net/freebies/free-3-character-sprite-sheets-pixel-art/
 
 ## AI Usage.
     Prompt #1: Take the spritesheet in Assets_City.png and remake sky.map where the background 
