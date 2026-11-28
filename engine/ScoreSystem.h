@@ -26,7 +26,7 @@ public:
             }
 
             Rect healthBox = wm.WindowToWorld(Rect{Point2D(xCoord, kMargin), kSquareSide, kSquareSide});
-            if (i <= health) {
+            if (i < health) {
                 wm.DebugDrawRect(healthBox, 0, 255, 0);
             }
 
