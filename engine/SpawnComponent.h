@@ -11,7 +11,7 @@ namespace ECSEngine {
 // This is only defined if an entity also has a LocationComponent.
 class SpawnComponent {
 public:
-    EntityID entityID;  // The entity that this spawn component is attached to
+    EntityID entity1ID;  // The entity that this spawn component is attached to
     std::string spawnType;
     SpriteID spawnTextureID;
     int timeToNextSpawn;

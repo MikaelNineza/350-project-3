@@ -10,7 +10,25 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override {
+        auto &em = engine->GetEntityManager();
+        for (auto &entity : em) {
+            EntityID id = entity.GetID();
+            if (!em.ValidEntity(id)) {
+					continue;
+			}
+            if (!em.template HasComponent<MovementComponent>(id) ||
+                !em.template HasComponent<LocationComponent>(id)) {
+                continue;
+            }
+
+            auto &mov = em.template GetComponent<MovementComponent>(id);
+            auto &loc = em.template GetComponent<LocationComponent>(id);
+
+            loc.loc = loc.loc + mov.velocity / 60.f;
+        }
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine

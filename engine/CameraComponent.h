@@ -22,8 +22,8 @@ struct CameraComponent {
     float speed;
 };
 
-struct CameraFollower {
-    EntityID entityID;  // The entity that this camera follows
+struct CameraFollowers {
+    std::vector<EntityID> entityIDs; // entities that this camera follows
 };
 
 struct CameraShake {
