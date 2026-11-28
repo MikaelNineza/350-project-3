@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
     // Place player1
     ECSEngine::EntityID playerID = em.CreateEntity("player1");
     ECSEngine::SpriteComponent spriteComp;
-    ECSEngine::SpriteID pSprite = sManager.RegisterTexture(gResourcePath + "Woodcutter_attack2.png", ECSEngine::Rect{ECSEngine::Point2D(0, 0), 48, 48});
+    ECSEngine::SpriteID pSprite = sManager.RegisterTexture(gResourcePath + "player1/Woodcutter_attack1.png", ECSEngine::Rect{ECSEngine::Point2D(0, 0), 48, 48});
     spriteComp.textureID = pSprite;
     spriteComp.bounds = ECSEngine::Rect{ECSEngine::Point2D(0, 0), 128, 128};
     spriteComp.worldSpace = true;
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
     // Place player2
     ECSEngine::EntityID playerID2 = em.CreateEntity("player2");
     ECSEngine::SpriteComponent spriteComp2;
-    ECSEngine::SpriteID pSprite2 = sManager.RegisterTexture(gResourcePath + "SteamMan_attack2.png", ECSEngine::Rect{ECSEngine::Point2D(0, 0), 48, 48});
+    ECSEngine::SpriteID pSprite2 = sManager.RegisterTexture(gResourcePath + "player2/SteamMan_attack1.png", ECSEngine::Rect{ECSEngine::Point2D(0, 0), 48, 48});
     spriteComp2.textureID = pSprite2;
     spriteComp2.bounds = ECSEngine::Rect{ECSEngine::Point2D(0, 0), 128, 128};
     spriteComp2.worldSpace = true;
