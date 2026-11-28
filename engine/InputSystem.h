@@ -39,10 +39,13 @@ public:
             CollisionComponent &col = em.template GetComponent<CollisionComponent>(id);
             GravityComponent &gravity = em.template GetComponent<GravityComponent>(id);
 
-            bool right = input.keydown[Key::D];
-            bool left = input.keydown[Key::A];
-            bool down = input.keydown[Key::S];
-            bool jump = input.keydown[Key::W] && !input.lastKeydown[Key::W];
+            bool isPlayer1 = entity.GetType() == "player1";
+
+            bool right = isPlayer1 ? input.keydown[Key::D] : input.keydown[Key::Right];
+            bool left = isPlayer1 ? input.keydown[Key::A] : input.keydown[Key::Left];
+            bool down = isPlayer1 ? input.keydown[Key::S] : input.keydown[Key::Down];
+            bool jump = isPlayer1 ? input.keydown[Key::W] && !input.lastKeydown[Key::W] : 
+                input.keydown[Key::Up] && !input.lastKeydown[Key::Up];
             bool dash = input.keydown[Key::C] && !input.lastKeydown[Key::C];
 
             // adjust speed in left/right direction

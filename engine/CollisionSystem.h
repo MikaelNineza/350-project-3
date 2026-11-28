@@ -36,7 +36,7 @@ public:
 			}
 
 			// collisions with dynamic objects
-			ResolveDynamics(engine);
+			// ResolveDynamics(engine);
 
 			// remove objects (stars that player consume)
 			for (auto id : mRemove) {
@@ -70,33 +70,33 @@ private:
         }
     };
 
-    void ResolveDynamics(tEngineView* engine) {
-        auto &em = engine->GetEntityManager();
-        for (size_t i = 0; i < mDynamics.size(); i++) {
-            for (size_t j = i + 1; j < mDynamics.size(); j++) {
-                EntityID a = mDynamics[i];
-                EntityID b = mDynamics[j];
-                AABB aBox = WorldBox(em, a);
-                AABB bBox = WorldBox(em, b);
-                if (!Overlaps(aBox, bBox)) {
-                    continue;
-                }
+    // void ResolveDynamics(tEngineView* engine) {
+    //     auto &em = engine->GetEntityManager();
+    //     for (size_t i = 0; i < mDynamics.size(); i++) {
+    //         for (size_t j = i + 1; j < mDynamics.size(); j++) {
+    //             EntityID a = mDynamics[i];
+    //             EntityID b = mDynamics[j];
+    //             AABB aBox = WorldBox(em, a);
+    //             AABB bBox = WorldBox(em, b);
+    //             if (!Overlaps(aBox, bBox)) {
+    //                 continue;
+    //             }
 
-                bool aIsPlayer = em.template HasComponent<InputComponent>(a);
-                bool bIsPlayer = em.template HasComponent<InputComponent>(b);
+    //             bool aIsPlayer = em.template HasComponent<InputComponent>(a);
+    //             bool bIsPlayer = em.template HasComponent<InputComponent>(b);
 
-                // player touched star
-                if (aIsPlayer || bIsPlayer) {
-                    if (aIsPlayer) {
-                        mRemove.push_back(b);
-                    }
-                    else {
-                        mRemove.push_back(a);
-                    }
-                }
-            }
-        }
-    }
+    //             // player touched star
+    //             if (aIsPlayer || bIsPlayer) {
+    //                 if (aIsPlayer) {
+    //                     mRemove.push_back(b);
+    //                 }
+    //                 else {
+    //                     mRemove.push_back(a);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     void ResolveStatics(tEngineView* engine, EntityID id) {
         auto &em = engine->GetEntityManager();
